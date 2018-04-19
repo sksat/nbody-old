@@ -8,9 +8,12 @@
 #include <sksat/math/gnuplot.hpp>
 
 struct planet {
-	sksat::math::vector<> pos, vel, acc;
+	sksat::math::vector<> pos, vel, acc[2];
 	double m;
+	static bool now;
 };
+
+bool planet::now = true;
 
 void time_step(std::vector<planet> &planet, const double &dt);
 void save_prof(const std::vector<planet> &planet);
@@ -79,7 +82,7 @@ void calc_acc(std::vector<planet> &planet){
 	// Fy= G * m / dy^2
 	// Fz= G * m / dz^2
 	for(size_t i=0;i<planet.size();i++){
-		auto& acc = planet[i].acc;
+		auto& acc = planet[i].acc[planet::now];
 		acc.x = acc.y = acc.z = 0.0;
 		for(size_t j=0;j<planet.size();j++){
 			if(i == j) continue;
@@ -99,9 +102,11 @@ void time_step(std::vector<planet> &planet, const double &dt){
 	calc_acc(planet);
 
 	for(auto& p : planet){
-		p.vel += p.acc * dt;
-		p.pos += p.vel * dt;
+		p.pos += p.vel * dt + 0.5 * p.acc[planet::now] * dt * dt;
+		p.vel += 0.5 * (p.acc[!planet::now] + p.acc[planet::now]) * dt;
 	}
+
+	planet::now = !planet::now;
 }
 
 void save_prof(const std::vector<planet> &planet){

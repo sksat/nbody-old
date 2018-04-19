@@ -18,7 +18,7 @@ void save_prof(const std::vector<planet> &planet);
 int main(int argc, char **argv){
 	std::vector<planet> pl;
 	const double dt = 0.001;
-	const double max_time = 5000.0;
+	const double max_time = 10.0;
 	double t = 0.0;
 
 	sksat::math::gnuplot plot;
@@ -42,11 +42,26 @@ int main(int argc, char **argv){
 	pl[2].pos.x	= 200.0;
 	pl[2].pos.y	= 250.0;
 	pl[2].vel.x	= -6.0;
-	pl[2].m		= 5.0;
+	pl[2].m		= 5000.0;
+
+	for(int i=-5;i<=5;i++){
+		planet p;
+		p.m = 100.0;
+		p.pos.x = 500.0 * i;
+		for(int j=-5;j<=5;j++){
+			if(i==0 && j==0) continue;
+			p.pos.y = 500.0 * j;
+			auto tmp = std::sqrt(i*i+j*j);
+			p.vel.x = j / tmp;
+			p.vel.y = -i/ tmp;
+			p.vel = p.vel * 5.0;
+			pl.push_back(p);
+		}
+	}
 
 	for(int i=0;;i++){
-		if(i%100==0) std::cout << "time=" << t << std::endl;
-		if(i%1000 == 0) save_prof(pl);
+		if(i%500==0) std::cout << "time=" << t << std::endl;
+		if(i%500 == 0) save_prof(pl);
 		time_step(pl, dt);
 		t += dt;
 		if(t > max_time) break;
